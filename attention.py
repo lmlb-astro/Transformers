@@ -1,12 +1,12 @@
 import numpy as np
 import tensorflow as tf
 
-# ADD: MASK, FOR DECODER
+# ADD: MASK
 
 
-## Class that defines an Attention Head (inherits from tf.keras.layers.Layer)
+## Class that defines a single Attention Head (inherits from tf.keras.layers.Layer)
 ## Input: embedding dimension, neurons of the attention head (dimensions of keys tensor)
-## Input: if dim_v = None: same dimensions as the Keys tensor, unless specified with an integer
+##        if dim_v = None: same dimensions as the Keys tensor, unless specified with an integer
 class AttentionHead(tf.keras.layers.Layer):
     def __init__(self, num_toks, emb_dim, dim_k, dim_v = None):
         ## initialize the parent class
