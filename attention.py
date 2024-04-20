@@ -1,6 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
+# ADD: MASK, FOR DECODER
+
 
 ## Class that defines an Attention Head (inherits from tf.keras.layers.Layer)
 ## Input: embedding dimension, neurons of the attention head (dimensions of keys tensor)
@@ -38,7 +40,7 @@ class AttentionHead(tf.keras.layers.Layer):
         v = self.Wv(inputs)
 
         ## calculate the softmax on the dot product of the queries and keys
-        softm = self.soft_max(tf.linalg.matmul(q, k, transpose_b = True))/np.sqrt(self.dim_k)
+        softm = self.soft_max(tf.linalg.matmul(q, k, transpose_b = True)/np.sqrt(self.dim_k))
 
         ## return the dot product with the values matrix
         return tf.linalg.matmul(softm, v)
