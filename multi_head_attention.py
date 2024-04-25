@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-# CONSIDER MULTIPLE INPUTS + ADD MASK
+# CONSIDER MULTIPLE INPUTS
 
 ## Class that implements a multihead attention layer, inherits from the tf.keras.layers.Layer class
 ## Input: the total Key and Value dimensions (heads x Key dimension & heads x Values dimension),
@@ -31,7 +31,8 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     
     ## The call function
     ## Shape of the input (batch_size, num_tokens, token_dimension)
-    def call(self, inputs):
+    ## Input: - shape of the mask: batch_size x #heads x #tokens x #tokens (values that should be masked need values equal to 1, unmasked values need values equal to zero)
+    def call(self, inputs, mask = None):
         ## calculate the Query, Key and Values vector on the input
         q = self.Wq(inputs)
         k = self.Wk(inputs)
@@ -42,8 +43,15 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         k = self.to_4D(k)
         v = self.to_4D(v)
 
-        ## perform the dot products all attention heads
-        softm = self.soft_max(tf.linalg.matmul(q, k, transpose_b = True)/np.sqrt(k.shape[3])) ## softmax(Q*K.transpose/sqrt(dim_k))
+        ## perform the dot product for all attention heads
+        dot_p = tf.linalg.matmul(q, k, transpose_b = True)/np.sqrt(k.shape[3]) ## softmax(Q*K.transpose/sqrt(dim_k))
+
+        ## apply the mask
+        if(mask is not None):
+            dot_p -= 1.0e15*mask
+
+        ##  perform the softmax and dot product with the values tensor
+        softm = self.soft_max(dot_p)
         att_heads = tf.linalg.matmul(softm, v)
 
         ## concatenate the output of the attention heads and multiple with W_{o} for the output of the layer

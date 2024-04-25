@@ -1,8 +1,6 @@
 import numpy as np
 import tensorflow as tf
 
-# ADD: MASK
-
 
 ## Class that defines a single Attention Head (inherits from tf.keras.layers.Layer)
 ## Input: embedding dimension, neurons of the attention head (dimensions of keys tensor)
@@ -30,7 +28,8 @@ class AttentionHead(tf.keras.layers.Layer):
 
 
     ## define the call function
-    def call(self, inputs):
+    ## Input: - shape of the mask: batch_size x #tokens x #tokens (values that should be masked need values equal to 1, unmasked values need values equal to zero)
+    def call(self, inputs, mask = None):
         ## Input layer
         inputs = self.input_layer(inputs)
         
@@ -39,8 +38,15 @@ class AttentionHead(tf.keras.layers.Layer):
         k = self.Wk(inputs)
         v = self.Wv(inputs)
 
+        ## dot product of the queries and keys
+        dot_p = tf.linalg.matmul(q, k, transpose_b = True)/np.sqrt(self.dim_k)
+
+        ## apply the mask
+        if(mask is not None):
+            dot_p -= 1.0e15*mask
+
         ## calculate the softmax on the dot product of the queries and keys
-        softm = self.soft_max(tf.linalg.matmul(q, k, transpose_b = True)/np.sqrt(self.dim_k))
+        softm = self.soft_max(dot_p)
 
         ## return the dot product with the values matrix
         return tf.linalg.matmul(softm, v)
